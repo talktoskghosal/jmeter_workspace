@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.4.1">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="JSR223 Full Test Plan" enabled="true">
+      <stringProp name="TestPlan.comments"></stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
+    </TestPlan>
+    <hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="User Load Test" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">5</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">5</stringProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="HTTP Defaults" enabled="true">
+          <stringProp name="HTTPSampler.domain">jsonplaceholder.typicode.com</stringProp>
+        </ConfigTestElement>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get User Info" enabled="true">
+          <stringProp name="HTTPSampler.domain"></stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.path">/users/1</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Modify Request Dynamically" enabled="true">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="script">sampler.setDomain("jsonplaceholder.typicode.com")
+sampler.setPath("/users/1")
+sampler.setMethod("GET")
+log.info("Request Sent to: " + sampler.getUrl())</stringProp>
+          </JSR223PreProcessor>
+          <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Extract JSON Data" enabled="true">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="script">import groovy.json.JsonSlurper
+def response = prev.getResponseDataAsString()
+def json = new JsonSlurper().parseText(response)
+vars.put("userId", json.id.toString())
+vars.put("userName", json.name)
+log.info("Extracted User ID: " + json.id)
+log.info("Extracted User Name: " + json.name)</stringProp>
+          </JSR223PostProcessor>
+          <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Check Response Text" enabled="true">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="script">def response = prev.getResponseDataAsString()
+def expectedText = "Leanne Graham"
+if (!response.contains(expectedText)) {
+    AssertionResult.setFailure(true)
+    AssertionResult.setFailureMessage("Response does not contain: " + expectedText)
+} else {
+    log.info("Response validation passed!")
+}</stringProp>
+          </JSR223Assertion>
+          <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Debug Info" enabled="true">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="script">log.info("Thread Name: " + ctx.getThread().getThreadName())
+log.info("Response Code: " + prev.getResponseCode())
+log.info("Response Time: " + prev.getTime() + " ms")
+log.info("Extracted User ID: " + vars.get("userId"))
+log.info("Extracted User Name: " + vars.get("userName"))</stringProp>
+          </JSR223Sampler>
+          <JSR223Timer guiclass="TestBeanGUI" testclass="JSR223Timer" testname="Random Think Time" enabled="true">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="script">def delay = (1000..3000).toList().shuffle().first()
+Thread.sleep(delay)
+log.info("Introducing Think Time: " + delay + " ms")</stringProp>
+          </JSR223Timer>
+          <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Write Data to File" enabled="true">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="script">def filePath = "C:/Users/YourUser/Desktop/jmeter_output.txt"
+new File(filePath).append("User ID: " + vars.get("userId") + ", Name: " + vars.get("userName") + "\n")
+log.info("Saved user details to file")</stringProp>
+          </JSR223PostProcessor>
+          <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Measure Execution Time" enabled="true">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="script">def start = System.currentTimeMillis()
+Thread.sleep(500)
+def end = System.currentTimeMillis()
+log.info("Execution Time: " + (end - start) + " ms")</stringProp>
+          </JSR223Sampler>
+        </hashTree>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

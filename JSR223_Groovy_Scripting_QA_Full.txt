@@ -1,0 +1,74 @@
+
+### JMeter JSR223 Groovy Scripting Q&A
+
+#### Q: How to do Groovy scripting in JSR223?
+**A:** JSR223 allows you to write Groovy scripts in JMeter using the JSR223 Sampler or PostProcessor.  
+Example:
+```groovy
+log.info("Hello from Groovy!")
+```
+
+#### Q: Provide 1 code snippet for every possible code snippet in JSR223
+**A:** JSR223 allows Groovy scripting for pre-processing, post-processing, assertions, and samplers.  
+Example snippets:
+1. **JSR223 PreProcessor**
+```groovy
+vars.put("timestamp", System.currentTimeMillis().toString())
+```
+2. **JSR223 PostProcessor**
+```groovy
+def response = prev.getResponseDataAsString()
+log.info("Response: " + response)
+```
+3. **JSR223 Assertion**
+```groovy
+assert prev.getResponseCode() == "200"
+```
+
+#### Q: Can I do JMeter Groovy scripting in VSCode?
+**A:** Yes, you can write and test Groovy scripts in VSCode, then copy them into JMeter. Use the **Groovy extension** or **JMeter Debug Sampler** for testing.
+
+#### Q: JSR223 Assertion code to check if a text "Scenario Name" is present in the response in JMeter?
+**A:** Use the following Groovy assertion:
+```groovy
+assert prev.getResponseDataAsString().contains("Scenario Name") : "Text not found!"
+```
+
+#### Q: How to show response assertion pass or fail in Debug Sampler?
+**A:** Use Groovy in JSR223 Assertion:
+```groovy
+if (prev.getResponseDataAsString().contains("Success")) {
+    log.info("Assertion Passed")
+} else {
+    log.error("Assertion Failed")
+}
+```
+
+#### Q: JSR223 Documentation?
+**A:** Official JSR223 documentation: [https://jmeter.apache.org/usermanual/component_reference.html#JSR223_Sampler](https://jmeter.apache.org/usermanual/component_reference.html#JSR223_Sampler)
+
+#### Q: JMeter error - Property HTTPSampler.Arguments is unset for element ConfigTestElement?
+**A:** Fix it by adding:
+```xml
+<elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+  <collectionProp name="Arguments.arguments"/>
+</elementProp>
+```
+
+#### Q: JMeter is throwing this error on opening the JMX file.
+**A:** The error occurs due to incorrect structure in the JMX file. A corrected version has been generated.
+
+#### Q: Fix for Groovy script error - Cannot invoke method first() on null object?
+**A:** Use this:
+```groovy
+def randomList = (1000..3000).toList()
+Collections.shuffle(randomList)
+def delay = randomList[0] // Get first value safely
+Thread.sleep(delay)
+log.info("Introducing Think Time: " + delay + " ms")
+```
+
+#### Q: It worked!
+**A:** Awesome! 🎉 Glad it worked! 🚀  
+
+(End of document)
